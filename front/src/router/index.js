@@ -4,6 +4,7 @@ import PostListView from '@/views/PostListView.vue'
 import PostDetailView from '@/views/PostDetailView.vue'
 import PostCreateView from '@/views/PostCreateView.vue'
 import PostEditView from '@/views/PostEditView.vue'
+import ChatView from '@/views/ChatView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,7 +33,12 @@ const router = createRouter({
       path: '/posts/edit/:id',
       name: 'postEdit',
       component: PostEditView,
-    }
+    },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: ChatView,
+    },
   ],
 })
 

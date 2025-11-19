@@ -1,71 +1,232 @@
 <template>
-    <RouterLink :to="{ name: 'posts' }">
-        <button>목록으로</button>
-    </RouterLink>
+    <v-app>
+        <v-main>
+            <v-container class="py-8">
+                <v-row justify="center">
+                    <v-col cols="12" md="10" lg="8">
+                        <!-- 로딩 -->
+                        <v-card v-if="!post" elevation="4" class="pa-10">
+                            <div class="text-center">
+                                <v-progress-circular
+                                    indeterminate
+                                    color="primary"
+                                    size="64"
+                                    class="mb-4"
+                                ></v-progress-circular>
+                                <p class="text-h6 text-grey">게시글을 불러오는 중...</p>
+                            </div>
+                        </v-card>
 
-    <div v-if="post">
-        <h2>{{ post.title }}</h2>
-        <p>카테고리: {{ getCategoryName(post.category) }}</p>
-        <p>작성자: {{ post.author }}</p>
-        <p>작성일: {{ formatDate(post.createdAt) }}</p>
-        <p>수정일: {{ formatDate(post.updatedAt) }}</p>
-        <p>조회수: {{ post.statistics.viewCounts }}</p>
-        <p>좋아요: {{ post.statistics.likeCounts }}</p>
-        
-        <hr>
-        
-        <div>{{ post.content }}</div>
-        
-        <hr>
-        
-        <RouterLink :to="{ name: 'postEdit', params: { id: post.id } }">
-            <button>수정</button>
-        </RouterLink>
-        <button @click="deletePost">삭제</button>
-        <button @click="updateLikeCounts(post.id)">{{ liked ? "좋아요 취소" : "좋아요" }}</button>
-        
-        <hr>
+                        <!-- 게시글 내용 -->
+                        <div v-else>
+                            <!-- 헤더 -->
+                            <div class="d-flex justify-space-between align-center mb-4">
+                                <v-btn
+                                    variant="text"
+                                    prepend-icon="mdi-arrow-left"
+                                    :to="{ name: 'posts' }"
+                                >
+                                    목록으로
+                                </v-btn>
+                            </div>
 
-        <form ref="commentForm" @submit.prevent="submitPostComment">
-            <div>
-                <label>작성자:</label>
-                <input v-model="form.author" type="text" required />
-            </div>
+                            <!-- 게시글 카드 -->
+                            <v-card elevation="4" class="mb-6">
+                                <v-card-text class="pa-6">
+                                    <!-- 카테고리 -->
+                                    <v-chip
+                                        :color="getCategoryColor(post.category)"
+                                        size="small"
+                                        class="mb-4"
+                                    >
+                                        {{ getCategoryName(post.category) }}
+                                    </v-chip>
 
-            <div>
-                <label>댓글:</label>
-                <textarea v-model="form.comment" rows="10" required></textarea>
-            </div>
+                                    <!-- 제목 -->
+                                    <h1 class="text-h4 font-weight-bold mb-4">
+                                        {{ post.title }}
+                                    </h1>
 
-            <div>
-                <button type="submit">{{ isEditing ? '수정' : '작성' }}</button>
-                <button type="button" @click="cancel">취소</button>
-            </div>
-        </form>
+                                    <!-- 메타 정보 -->
+                                    <div class="d-flex flex-wrap gap-4 mb-4 text-grey">
+                                        <div class="d-flex align-center">
+                                            <v-icon size="small" class="mr-1">mdi-account</v-icon>
+                                            <span>{{ post.author }}</span>
+                                        </div>
+                                        <div class="d-flex align-center">
+                                            <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
+                                            <span>{{ formatDate(post.createdAt) }}</span>
+                                        </div>
+                                        <div class="d-flex align-center">
+                                            <v-icon size="small" class="mr-1">mdi-eye</v-icon>
+                                            <span>{{ post.statistics.viewCounts }}</span>
+                                        </div>
+                                        <div class="d-flex align-center">
+                                            <v-icon size="small" class="mr-1">mdi-heart</v-icon>
+                                            <span>{{ post.statistics.likeCounts }}</span>
+                                        </div>
+                                        <div class="d-flex align-center">
+                                            <v-icon size="small" class="mr-1">mdi-comment</v-icon>
+                                            <span>{{ post.statistics.commentCounts }}</span>
+                                        </div>
+                                    </div>
 
-        <hr>
+                                    <v-divider class="my-6"></v-divider>
 
-        <p>댓글 수: {{ post.statistics.commentCounts }}</p>
+                                    <!-- 내용 -->
+                                    <div class="post-content text-body-1">
+                                        {{ post.content }}
+                                    </div>
 
-        <div v-for="(comment, index) in comments" :key="comment.id">
-            <span>작성자: {{comment.author}} / </span>
-            <span>댓글: {{comment.comment}} / </span>
-            <span>작성일: {{ formatDate(comment.createdAt) }} / </span>
-            <span>작성일: {{ formatDate(comment.updatedAt) }} / </span>
-            <button @click="modifyPostComment(comment, index)">수정</button>
-            <button @click="deletePostComment(comment)">제거</button>
-        </div>
+                                    <v-divider class="my-6"></v-divider>
 
-    </div>
+                                    <!-- 액션 버튼 -->
+                                    <div class="d-flex justify-space-between align-center">
+                                        <div class="d-flex gap-2">
+                                            <v-btn
+                                                color="primary"
+                                                variant="outlined"
+                                                prepend-icon="mdi-pencil"
+                                                :to="{ name: 'postEdit', params: { id: post.id } }"
+                                            >
+                                                수정
+                                            </v-btn>
+                                            <v-btn
+                                                color="error"
+                                                variant="outlined"
+                                                prepend-icon="mdi-delete"
+                                                @click="deletePost"
+                                            >
+                                                삭제
+                                            </v-btn>
+                                        </div>
+                                        <v-btn
+                                            :color="liked ? 'error' : 'grey'"
+                                            :variant="liked ? 'flat' : 'outlined'"
+                                            prepend-icon="mdi-heart"
+                                            @click="updateLikeCounts(post.id)"
+                                        >
+                                            {{ liked ? "좋아요 취소" : "좋아요" }}
+                                        </v-btn>
+                                    </div>
+                                </v-card-text>
+                            </v-card>
 
-    <div v-else>
-        <p>게시글을 불러오는 중...</p>
-    </div>
+                            <!-- 댓글 작성 폼 -->
+                            <v-card elevation="4" class="mb-6" ref="commentForm">
+                                <v-card-title class="bg-grey-lighten-4">
+                                    <v-icon class="mr-2">mdi-comment-edit</v-icon>
+                                    {{ isEditing ? '댓글 수정' : '댓글 작성' }}
+                                </v-card-title>
+                                <v-card-text class="pa-6">
+                                    <v-form @submit.prevent="submitPostComment">
+                                        <v-text-field
+                                            v-model="form.author"
+                                            label="작성자"
+                                            variant="outlined"
+                                            required
+                                            prepend-inner-icon="mdi-account"
+                                            class="mb-4"
+                                        ></v-text-field>
+
+                                        <v-textarea
+                                            v-model="form.comment"
+                                            label="댓글"
+                                            variant="outlined"
+                                            required
+                                            rows="4"
+                                            prepend-inner-icon="mdi-comment"
+                                            class="mb-4"
+                                        ></v-textarea>
+
+                                        <div class="d-flex justify-end gap-2">
+                                            <v-btn
+                                                variant="outlined"
+                                                @click="cancel"
+                                            >
+                                                취소
+                                            </v-btn>
+                                            <v-btn
+                                                type="submit"
+                                                color="primary"
+                                            >
+                                                {{ isEditing ? '수정' : '작성' }}
+                                            </v-btn>
+                                        </div>
+                                    </v-form>
+                                </v-card-text>
+                            </v-card>
+
+                            <!-- 댓글 목록 -->
+                            <v-card elevation="4">
+                                <v-card-title class="bg-grey-lighten-4">
+                                    <v-icon class="mr-2">mdi-comment-multiple</v-icon>
+                                    댓글 {{ post.statistics.commentCounts }}개
+                                </v-card-title>
+                                <v-card-text class="pa-0">
+                                    <v-list>
+                                        <template v-for="(comment, index) in comments" :key="comment.id">
+                                            <v-list-item class="py-4">
+                                                <div class="w-100">
+                                                    <!-- 댓글 헤더 -->
+                                                    <div class="d-flex justify-space-between align-center mb-2">
+                                                        <div class="d-flex align-center">
+                                                            <v-avatar color="primary" size="32" class="mr-2">
+                                                                <span class="text-white text-body-2">
+                                                                    {{ comment.author.charAt(0).toUpperCase() }}
+                                                                </span>
+                                                            </v-avatar>
+                                                            <div>
+                                                                <div class="font-weight-bold">{{ comment.author }}</div>
+                                                                <div class="text-caption text-grey">
+                                                                    {{ formatDate(comment.createdAt) }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex gap-1">
+                                                            <v-btn
+                                                                size="small"
+                                                                variant="text"
+                                                                icon="mdi-pencil"
+                                                                @click="modifyPostComment(comment, index)"
+                                                            ></v-btn>
+                                                            <v-btn
+                                                                size="small"
+                                                                variant="text"
+                                                                icon="mdi-delete"
+                                                                color="error"
+                                                                @click="deletePostComment(comment)"
+                                                            ></v-btn>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 댓글 내용 -->
+                                                    <div class="text-body-2 ml-10">
+                                                        {{ comment.comment }}
+                                                    </div>
+                                                </div>
+                                            </v-list-item>
+                                            <v-divider v-if="index < comments.length - 1"></v-divider>
+                                        </template>
+
+                                        <!-- 댓글이 없을 때 -->
+                                        <v-list-item v-if="comments.length === 0" class="text-center pa-8">
+                                            <div class="text-grey">
+                                                <v-icon size="48" class="mb-2">mdi-comment-off-outline</v-icon>
+                                                <p>첫 댓글을 작성해보세요!</p>
+                                            </div>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-card-text>
+                            </v-card>
+                        </div>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+    </v-app>
 </template>
 
 <script setup>
-    import { RouterLink } from 'vue-router';
-
     import { ref, onMounted, reactive, computed } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
     import axios from 'axios'
@@ -93,8 +254,18 @@
         game: "게임",
         sports: "스포츠"
     }
+
     const getCategoryName = (category) => {
         return categoryNames[category] || category
+    }
+
+    const getCategoryColor = (category) => {
+        const colors = {
+            it: 'blue',
+            game: 'purple',
+            sports: 'green'
+        }
+        return colors[category] || 'grey'
     }
 
     const formatDate = (dateString) => {
@@ -130,7 +301,6 @@
             }
         } catch (error) {
             console.error('View count 업데이트 실패:', error)
-            alert('View count를 업데이트 하는 데 실패했습니다.')
         }
     }
 
@@ -151,22 +321,16 @@
     }
 
     const updateLikeCounts = async (id) => {
-        const updatedCounts = ref(0);
-        if (liked.value) {
-            updatedCounts.value = -1
-        } else {
-            updatedCounts.value = 1
-        }
+        const updatedCounts = liked.value ? -1 : 1
 
         try {
             const response = await axios.post(`${API_BASE_URL}/posts/${id}/stat/like`, {}, {
-                params: { counts: updatedCounts.value }
+                params: { counts: updatedCounts }
             })
 
-            if (response.data.status == "success") {
+            if (response.data.status === "success") {
                 liked.value = !liked.value
-                post.value.statistics.likeCounts += updatedCounts.value
-                alert("좋아요 수가 " + post.value.statistics.likeCounts + "로 업데이트 되었습니다.")
+                post.value.statistics.likeCounts += updatedCounts
             }
         } catch (error) {
             alert("좋아요 수를 업데이트 하는 데 실패했습니다.")
@@ -180,12 +344,8 @@
                 
                 if (response.data.status === 'success') {
                     comments.value[commentIdx.value] = response.data.data
-                    form.id = null
-                    form.author = ''
-                    form.comment = ''
-                    commentIdx.value = null
+                    cancel()
                     alert('댓글이 수정되었습니다.')
-                    router.push(`/posts/${response.data.data.postId}`)
                 }
             } catch (error) {
                 console.error('댓글 수정 실패:', error)
@@ -197,11 +357,9 @@
                 
                 if (response.data.status === 'success') {
                     comments.value.push(response.data.data)
-                    form.author = ''
-                    form.comment = ''
                     post.value.statistics.commentCounts += 1
+                    cancel()
                     alert('댓글이 작성되었습니다.')
-                    router.push(`/posts/${route.params.id}`)
                 }
             } catch (error) {
                 console.error('댓글 작성 실패:', error)
@@ -214,10 +372,8 @@
         form.id = comment.id
         form.author = comment.author
         form.comment = comment.comment
-
         commentIdx.value = index
-    
-        commentForm.value?.scrollIntoView({ behavior: 'smooth' })
+        commentForm.value?.$el.scrollIntoView({ behavior: 'smooth' })
     }
 
     const deletePostComment = async (comment) => {
@@ -227,9 +383,12 @@
             const response = await axios.delete(`${API_BASE_URL}/posts/${route.params.id}/comment/${comment.id}`)
             
             if (response.data.status === 'success') {
+                const index = comments.value.findIndex(c => c.id === comment.id)
+                if (index > -1) {
+                    comments.value.splice(index, 1)
+                }
                 post.value.statistics.commentCounts -= 1
                 alert('댓글이 삭제되었습니다.')
-                router.push(`/posts/${route.params.id}`)
             }
         } catch (error) {
             console.error('댓글 삭제 실패:', error)
@@ -237,11 +396,30 @@
         }
     }
 
+    const cancel = () => {
+        form.id = null
+        form.author = ''
+        form.comment = ''
+        commentIdx.value = null
+    }
+
     onMounted(() => {
         fetchPost()
     })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
+    .gap-2 {
+        gap: 8px;
+    }
 
+    .gap-4 {
+        gap: 16px;
+    }
+
+    .post-content {
+        white-space: pre-wrap;
+        word-break: break-word;
+        line-height: 1.8;
+    }
 </style>

@@ -1,38 +1,95 @@
 <template>
-    <h2>게시글 작성</h2>
-    <div>
-        <form @submit.prevent="submitPost">
-            <div>
-                <label>제목:</label>
-                <input v-model="form.title" type="text" required />
-            </div>
+    <v-app>
+        <v-main>
+            <v-container class="py-8">
+                <v-row justify="center">
+                    <v-col cols="12" md="10" lg="8">
+                        <!-- 헤더 -->
+                        <div class="mb-6">
+                            <h1 class="text-h4 font-weight-bold mb-2">✍️ 게시글 작성</h1>
+                            <p class="text-grey">새로운 게시글을 작성해보세요</p>
+                        </div>
 
-            <div>
-                <label>작성자:</label>
-                <input v-model="form.author" type="text" required />
-            </div>
+                        <!-- 폼 카드 -->
+                        <v-card elevation="4">
+                            <v-card-text class="pa-6">
+                                <v-form @submit.prevent="submitPost">
+                                    <!-- 제목 -->
+                                    <v-text-field
+                                        v-model="form.title"
+                                        label="제목"
+                                        variant="outlined"
+                                        required
+                                        prepend-inner-icon="mdi-format-title"
+                                        placeholder="제목을 입력하세요"
+                                        :rules="[v => !!v || '제목을 입력해주세요']"
+                                        class="mb-4"
+                                    ></v-text-field>
 
-            <div>
-                <label>카테고리:</label>
-                <select v-model="form.category" required>
-                    <option value="">선택하세요</option>
-                    <option value="it">IT</option>
-                    <option value="game">게임</option>
-                    <option value="sports">스포츠</option>
-                </select>
-            </div>
+                                    <!-- 작성자 -->
+                                    <v-text-field
+                                        v-model="form.author"
+                                        label="작성자"
+                                        variant="outlined"
+                                        required
+                                        prepend-inner-icon="mdi-account"
+                                        placeholder="작성자 이름을 입력하세요"
+                                        :rules="[v => !!v || '작성자를 입력해주세요']"
+                                        class="mb-4"
+                                    ></v-text-field>
 
-            <div>
-                <label>내용:</label>
-                <textarea v-model="form.content" rows="10" required></textarea>
-            </div>
+                                    <!-- 카테고리 -->
+                                    <v-select
+                                        v-model="form.category"
+                                        :items="categoryOptions"
+                                        label="카테고리"
+                                        variant="outlined"
+                                        required
+                                        prepend-inner-icon="mdi-tag"
+                                        placeholder="카테고리를 선택하세요"
+                                        :rules="[v => !!v || '카테고리를 선택해주세요']"
+                                        class="mb-4"
+                                    ></v-select>
 
-            <div>
-                <button type="submit">작성</button>
-                <button type="button" @click="cancel">취소</button>
-            </div>
-        </form>
-    </div>
+                                    <!-- 내용 -->
+                                    <v-textarea
+                                        v-model="form.content"
+                                        label="내용"
+                                        variant="outlined"
+                                        required
+                                        rows="12"
+                                        prepend-inner-icon="mdi-text"
+                                        placeholder="내용을 입력하세요"
+                                        :rules="[v => !!v || '내용을 입력해주세요']"
+                                        class="mb-4"
+                                    ></v-textarea>
+
+                                    <!-- 버튼 -->
+                                    <div class="d-flex justify-end gap-2">
+                                        <v-btn
+                                            size="large"
+                                            variant="outlined"
+                                            @click="cancel"
+                                        >
+                                            취소
+                                        </v-btn>
+                                        <v-btn
+                                            type="submit"
+                                            size="large"
+                                            color="primary"
+                                            prepend-icon="mdi-check"
+                                        >
+                                            작성 완료
+                                        </v-btn>
+                                    </div>
+                                </v-form>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+    </v-app>
 </template>
 
 <script setup>
@@ -49,6 +106,12 @@
         category: '',
         content: ''
     })
+
+    const categoryOptions = [
+        { title: 'IT', value: 'it' },
+        { title: '게임', value: 'game' },
+        { title: '스포츠', value: 'sports' }
+    ]
 
     const submitPost = async () => {
         try {
@@ -71,6 +134,8 @@
     }
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+    .gap-2 {
+        gap: 8px;
+    }
 </style>
