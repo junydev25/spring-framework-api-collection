@@ -3,7 +3,6 @@ package com.junydev.spring.api.board.service;
 import com.junydev.spring.api.board.internal.entity.PostsStatistics;
 import com.junydev.spring.api.board.repository.PostsStatisticsRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

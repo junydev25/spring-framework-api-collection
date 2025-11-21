@@ -22,6 +22,7 @@ public class PostsStatisticsService {
     }
 
     public void updateCounts(Long id, StatType type, int counts) {
+        this.postsStatisticsRepository.findById(id);
         this.rabbitTemplate.convertAndSend("post.stats.exchange", type.toString(), Map.of("id", id, "counts", counts));
     }
 
@@ -29,14 +30,20 @@ public class PostsStatisticsService {
         PostsStatistics statistics = this.postsStatisticsRepository.findById(id);
 
         PostStatDto postStatDto = PostStatDto.builder().id(id).build();
-        if (stats.contains(StatType.LIKE)) {
+        if (stats.isEmpty()) {
             postStatDto.setLikeCounts(statistics.getLikeCounts());
-        }
-        if (stats.contains(StatType.VIEW)) {
             postStatDto.setViewCounts(statistics.getViewCounts());
-        }
-        if (stats.contains(StatType.COMMENT)) {
             postStatDto.setCommentCounts(statistics.getCommentCounts());
+
+            return postStatDto;
+        }
+
+        for (StatType stat : stats) {
+            switch (stat) {
+                case LIKE -> postStatDto.setLikeCounts(statistics.getLikeCounts());
+                case VIEW -> postStatDto.setViewCounts(statistics.getViewCounts());
+                case COMMENT -> postStatDto.setCommentCounts(statistics.getCommentCounts());
+            }
         }
 
         return postStatDto;

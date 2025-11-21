@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -53,5 +54,6 @@ public class Posts {
     private PostsDetail detail;
 
     @OneToMany(mappedBy = "posts")
-    private List<PostsComment> comments;
+    @Builder.Default
+    private List<PostsComment> comments = new ArrayList<>();
 }

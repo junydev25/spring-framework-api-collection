@@ -6,27 +6,25 @@ import com.junydev.spring.api.board.internal.entity.Posts;
 import com.junydev.spring.api.board.internal.entity.PostsDetail;
 import com.junydev.spring.api.board.internal.entity.PostsStatistics;
 import com.junydev.spring.api.board.repository.PostsRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PostsService {
 
     private final PostsRepository postsRepository;
 
-    public PostsService(PostsRepository postsRepository) {
-        this.postsRepository = postsRepository;
-    }
-
+    @Transactional(readOnly = true)
     public PostDto getPost(Long id) {
-        Posts post = this.postsRepository.findById(id);
-        return PostDto.of(post);
+        return PostDto.of(this.postsRepository.findById(id));
     }
 
+    @Transactional(readOnly = true)
     public List<PostDto> getPosts(Category category, String author) {
         return this.postsRepository.findAll(category, author).stream()
                 .map(PostDto::of).toList();
@@ -54,7 +52,6 @@ public class PostsService {
 
         post.setStatistic(statistic);
         post.setDetail(detail);
-        post.setComments(new ArrayList<>());
 
         // id 얻기 위해서 저장 후 return 해야 함
         return PostDto.of(this.postsRepository.save(post));
@@ -62,7 +59,9 @@ public class PostsService {
 
     @Transactional
     public PostDto updatePost(PostDto postDto) {
-        Posts post = this.postsRepository.findById(postDto.getId());
+        Long id = postDto.getId();
+        Posts post = this.postsRepository.findById(id);
+
         post.setTitle(postDto.getTitle());
         post.setCategory(postDto.getCategory());
 
@@ -76,6 +75,7 @@ public class PostsService {
 
     @Transactional
     public void deletePost(Long id) {
-        this.postsRepository.remove(id);
+        Posts post = this.postsRepository.findById(id);
+        this.postsRepository.remove(post);
     }
 }

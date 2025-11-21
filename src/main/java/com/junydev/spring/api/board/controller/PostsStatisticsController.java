@@ -17,7 +17,7 @@ public class PostsStatisticsController {
     }
 
     @GetMapping("/api/posts/{id}/stat")
-    public ApiResponse getStat(@RequestParam(required = true) List<StatType> stats,
+    public ApiResponse getStat(@RequestParam(required = false) List<StatType> stats,
                                @PathVariable Long id) {
         return ApiResponse.builder()
                 .status("success")

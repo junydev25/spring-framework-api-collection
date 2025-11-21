@@ -4,7 +4,6 @@ import com.junydev.spring.api.board.internal.dto.Category;
 import com.junydev.spring.api.board.internal.dto.PostDto;
 import com.junydev.spring.api.board.service.PostsService;
 import com.junydev.spring.api.common.ApiResponse;
-import com.junydev.spring.api.exception.ResourceNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,13 +20,9 @@ public class PostsController {
 
     @GetMapping("/api/posts/{id}")
     public ApiResponse getPost(@PathVariable Long id) {
-        PostDto post = this.postsService.getPost(id);
-        if (post == null) {
-            throw new ResourceNotFoundException("게시물을 찾을 수 없습니다.(id=%d)".formatted(id));
-        }
         return ApiResponse.builder()
                 .status("success")
-                .data(post)
+                .data(this.postsService.getPost(id))
                 .build();
     }
 

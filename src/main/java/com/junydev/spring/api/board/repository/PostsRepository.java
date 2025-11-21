@@ -2,6 +2,7 @@ package com.junydev.spring.api.board.repository;
 
 import com.junydev.spring.api.board.internal.dto.Category;
 import com.junydev.spring.api.board.internal.entity.Posts;
+import com.junydev.spring.api.exception.ResourceNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -16,7 +17,11 @@ public class PostsRepository {
     private EntityManager em;
 
     public Posts findById(Long id) {
-       return this.em.find(Posts.class, id);
+        Posts post = this.em.find(Posts.class, id);
+        if (post == null) {
+            throw new ResourceNotFoundException("게시물을 찾을 수 없습니다.(id=%d)".formatted(id));
+        }
+        return post;
     }
 
     public List<Posts> findAll(Category category, String author) {
@@ -45,7 +50,7 @@ public class PostsRepository {
         return post;
     }
 
-    public void remove(Long id) {
-        this.em.remove(this.findById(id));
+    public void remove(Posts post) {
+        this.em.remove(post);
     }
 }
