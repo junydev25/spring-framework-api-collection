@@ -1,6 +1,7 @@
 package com.junydev.spring.api.board.repository;
 
 import com.junydev.spring.api.board.internal.entity.PostsComment;
+import com.junydev.spring.api.exception.ResourceNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,11 @@ public class PostsCommentRepository {
     private EntityManager em;
 
     public PostsComment findById(Long id) {
-        return this.em.find(PostsComment.class, id);
+        PostsComment postsComment = this.em.find(PostsComment.class, id);
+        if (postsComment == null) {
+            throw new ResourceNotFoundException("게시물을 찾을 수 없습니다.(id=%d)".formatted(id));
+        }
+        return postsComment;
     }
 
     public PostsComment save(PostsComment postsComment) {
@@ -20,7 +25,7 @@ public class PostsCommentRepository {
         return postsComment;
     }
 
-    public void remove(Long commentId) {
-        this.em.remove(this.findById(commentId));
+    public void remove(PostsComment postsComment) {
+        this.em.remove(postsComment);
     }
 }

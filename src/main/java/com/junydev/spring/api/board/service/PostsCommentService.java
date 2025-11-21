@@ -64,10 +64,11 @@ public class PostsCommentService {
         Posts posts = this.postsRepository.findById(postId);
         posts.getComments().remove(postsComment);
 
-        this.postsCommentRepository.remove(commentId);
+        this.postsCommentRepository.remove(postsComment);
         this.rabbitTemplate.convertAndSend(
                 "post.stats.exchange",
                 StatType.COMMENT.toString(),
-                Map.of("id", postId, "counts", -1));
+                Map.of("id", postId, "counts", -1)
+        );
     }
 }
